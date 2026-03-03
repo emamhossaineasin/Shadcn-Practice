@@ -74,11 +74,11 @@ const StudentofDept = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-center">
+    <div className="w-full flex justify-center">
       {loading ? (
         <p className="text-xl"> Loading students... </p>
       ) : (
-        <div className="w-5xl">
+        <div className="w-full">
           <Button
             variant="ghost"
             className="mb-4 gap-2"

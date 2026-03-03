@@ -10,7 +10,7 @@ const Home = () => {
       <Navbar onMenuClick={() => setSidebarCollapsed((prev) => !prev)} />
       <div className="flex flex-1 overflow-auto">
         <Sidebar collapsed={sidebarCollapsed} />
-        <div className="flex w-full  justify-center overflow-auto ">
+        <div className="flex w-full min-h-full justify-center overflow-auto ">
           <Outlet />
         </div>
       </div>

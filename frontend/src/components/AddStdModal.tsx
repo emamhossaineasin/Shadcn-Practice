@@ -18,9 +18,9 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { z } from "zod";
 
 interface Department {
@@ -48,10 +48,17 @@ type StudentFormValues = z.infer<typeof studentSchema>;
 const AddStdModal = ({ onClose }: { onClose: () => void }) => {
   const { studentId: paramStudentId } = useParams<{ studentId: string }>();
   const isEditMode = Boolean(paramStudentId);
-  const navigate = useNavigate();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
+
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  const closeModal = (e: MouseEvent) => {
+    if (modalRef.current === e.target) {
+      onClose();
+    }
+  };
 
   const {
     register,
@@ -116,7 +123,7 @@ const AddStdModal = ({ onClose }: { onClose: () => void }) => {
           department_id: Number(values.department_id),
         });
       }
-      navigate("/student");
+      onClose();
     } catch (err) {
       console.error("Failed to save student:", err);
       setServerError("Failed to save student. Please try again.");
@@ -126,7 +133,11 @@ const AddStdModal = ({ onClose }: { onClose: () => void }) => {
   };
 
   return (
-    <div className="fixed inset-0  z-50 bg-opacity-30 backdrop-blur-sm flex justify-center items-center">
+    <div
+      ref={modalRef}
+      onClick={closeModal}
+      className="fixed inset-0  z-50 bg-opacity-30 backdrop-blur-sm flex justify-center items-center"
+    >
       <div className="w-4xl mt-10 flex flex-col border rounded-2xl">
         <Card>
           <button

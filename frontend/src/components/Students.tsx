@@ -67,11 +67,11 @@ const Students = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-center h-full overflow-auto">
+    <div className="w-full flex justify-center h-full overflow-auto p-5">
       {loading ? (
         <p className="text-xl"> Loading students... </p>
       ) : (
-        <div className="w-5xl h-auto flex flex-col mt-30 p-2">
+        <div className="w-full h-auto flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Students</h2>
             <Button
@@ -82,7 +82,7 @@ const Students = () => {
               Add Student
             </Button>
           </div>
-          <div className="">
+          
             <Table>
               <TableHeader>
                 <TableRow>
@@ -132,7 +132,7 @@ const Students = () => {
                 ))}
               </TableBody>
             </Table>
-          </div>
+          
           {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
           {showModal && <AddStdModal onClose={() => setShowModal(false)} />}
         </div>

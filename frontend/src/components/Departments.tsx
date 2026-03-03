@@ -75,11 +75,11 @@ const Departments = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-center">
+    <div className="w-full flex justify-center p-5">
       {loading ? (
         <p className="text-xl"> Loading departments... </p>
       ) : (
-        <div className="w-5xl">
+        <div className="w-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Departments</h2>
             <Button
