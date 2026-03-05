@@ -44,17 +44,17 @@ const studentSchema = z.object({
 
 type StudentFormValues = z.infer<typeof studentSchema>;
 
-interface AddStdModalProps {
+interface UpdateStdModalProps {
   onClose: () => void;
-  initialDepartmentId?: number;
+  studentId: number;
   onSaved?: () => void;
 }
 
-const AddStdModal = ({
+const UpdateStdModal = ({
   onClose,
-  initialDepartmentId,
+  studentId,
   onSaved,
-}: AddStdModalProps) => {
+}: UpdateStdModalProps) => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -95,25 +95,35 @@ const AddStdModal = ({
   }, []);
 
   useEffect(() => {
-    if (typeof initialDepartmentId === "number") {
-      setValue("department_id", String(initialDepartmentId));
-    }
-  }, [initialDepartmentId, setValue]);
+    const fetchStudent = async () => {
+      try {
+        const res = await api.get(`/getStudentById?id=${studentId}`);
+        setValue("student_id", String(res.data.student_id));
+        setValue("student_name", res.data.student_name);
+        setValue("department_id", String(res.data.department_id));
+      } catch (err) {
+        console.error("Failed to fetch student:", err);
+        setServerError("Failed to load student data.");
+      }
+    };
+
+    fetchStudent();
+  }, [setValue, studentId]);
 
   const onSubmit = async (values: StudentFormValues) => {
     setLoading(true);
     setServerError("");
     try {
-      await api.post("/postStudent", {
-        student_id: Number(values.student_id),
+      await api.put(`/updateStudent/${studentId}`, {
         student_name: values.student_name.trim(),
         department_id: Number(values.department_id),
       });
+
       onSaved?.();
       onClose();
     } catch (err) {
-      console.error("Failed to save student:", err);
-      setServerError("Failed to save student. Please try again.");
+      console.error("Failed to update student:", err);
+      setServerError("Failed to update student. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -135,10 +145,8 @@ const AddStdModal = ({
           </button>
 
           <CardHeader>
-            <CardTitle>Add New Student</CardTitle>
-            <CardDescription>
-              Fill in the student details below.
-            </CardDescription>
+            <CardTitle>Update Student</CardTitle>
+            <CardDescription>Update the student details below.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -149,6 +157,7 @@ const AddStdModal = ({
                   type="number"
                   placeholder="Enter student ID"
                   {...register("student_id")}
+                  disabled
                 />
                 {errors.student_id && (
                   <p className="text-sm text-red-500">
@@ -206,7 +215,7 @@ const AddStdModal = ({
                 className="w-full  bg-green-600 hover:bg-green-700"
                 disabled={loading}
               >
-                {loading ? "Adding..." : "Add Student"}
+                {loading ? "Updating..." : "Update Student"}
               </Button>
             </form>
           </CardContent>
@@ -216,4 +225,4 @@ const AddStdModal = ({
   );
 };
 
-export default AddStdModal;
+export default UpdateStdModal;

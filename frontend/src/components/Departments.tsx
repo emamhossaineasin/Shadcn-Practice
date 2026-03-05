@@ -12,6 +12,8 @@ import axios, { AxiosError } from "axios";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AddDeptModal from "./AddDeptModal";
+import UpdateDeptModal from "./UpdateDeptModal";
 
 interface Department {
   department_id: number;
@@ -24,6 +26,10 @@ const api = axios.create({
 });
 
 const Departments = () => {
+  const [showModal, setShowModal] = useState(false);
+  const [editingDepartmentId, setEditingDepartmentId] = useState<number | null>(
+    null,
+  );
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -84,7 +90,10 @@ const Departments = () => {
             <h2 className="text-xl font-semibold">Departments</h2>
             <Button
               className="gap-2 bg-green-600 hover:bg-green-700"
-              onClick={() => navigate("/department/add")}
+              onClick={() => {
+                setEditingDepartmentId(null);
+                setShowModal(true);
+              }}
             >
               <Plus size={16} />
               Add Department
@@ -99,7 +108,7 @@ const Departments = () => {
               <TableRow>
                 <TableHead className="w-20">Department ID</TableHead>
                 <TableHead className="w-60">Department Name</TableHead>
-                <TableHead className="w-20 text-center">Actions</TableHead>
+                <TableHead className="w-10 text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -125,7 +134,8 @@ const Departments = () => {
                         className="gap-1 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/department/edit/${dept.department_id}`);
+                          setEditingDepartmentId(dept.department_id);
+                          setShowModal(true);
                         }}
                       >
                         <Pencil size={14} />
@@ -149,6 +159,25 @@ const Departments = () => {
               ))}
             </TableBody>
           </Table>
+          {showModal &&
+            (editingDepartmentId === null ? (
+              <AddDeptModal
+                onSaved={fetchDepartments}
+                onClose={() => {
+                  setShowModal(false);
+                  setEditingDepartmentId(null);
+                }}
+              />
+            ) : (
+              <UpdateDeptModal
+                departmentId={editingDepartmentId}
+                onSaved={fetchDepartments}
+                onClose={() => {
+                  setShowModal(false);
+                  setEditingDepartmentId(null);
+                }}
+              />
+            ))}
         </div>
       )}
     </div>

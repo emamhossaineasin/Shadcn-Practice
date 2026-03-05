@@ -10,8 +10,8 @@ import {
 import axios from "axios";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import AddStdModal from "./AddStdModal";
+import UpdateStdModal from "./UpdateStdModal";
 
 interface Student {
   student_id: number;
@@ -26,10 +26,10 @@ const api = axios.create({
 
 const Students = () => {
   const [showModal, setShowModal] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState<number | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -76,7 +76,10 @@ const Students = () => {
             <h2 className="text-xl font-semibold">Students</h2>
             <Button
               className="gap-2 bg-green-600 hover:bg-green-700"
-              onClick={() => setShowModal(true)}
+              onClick={() => {
+                setEditingStudentId(null);
+                setShowModal(true);
+              }}
             >
               <Plus size={16} />
               Add Student
@@ -110,9 +113,10 @@ const Students = () => {
                           size="sm"
                           variant="outline"
                           className="gap-1 cursor-pointer"
-                          onClick={() =>
-                            navigate(`/student/edit/${student.student_id}`)
-                          }
+                          onClick={() => {
+                            setEditingStudentId(student.student_id);
+                            setShowModal(true);
+                          }}
                         >
                           <Pencil size={14} />
                           Edit
@@ -134,7 +138,25 @@ const Students = () => {
             </Table>
           
           {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
-          {showModal && <AddStdModal onClose={() => setShowModal(false)} />}
+          {showModal &&
+            (editingStudentId === null ? (
+              <AddStdModal
+                onSaved={fetchStudents}
+                onClose={() => {
+                  setShowModal(false);
+                  setEditingStudentId(null);
+                }}
+              />
+            ) : (
+              <UpdateStdModal
+                studentId={editingStudentId}
+                onSaved={fetchStudents}
+                onClose={() => {
+                  setShowModal(false);
+                  setEditingStudentId(null);
+                }}
+              />
+            ))}
         </div>
       )}
     </div>
