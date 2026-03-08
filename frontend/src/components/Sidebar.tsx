@@ -36,6 +36,20 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         >
           Student
         </MenuItem>
+        <MenuItem
+          icon={<ClipboardList size={20} />}
+          component={<Link to="/dept" />}
+          className={isActive("/dept") ? "font-medium text-red-800" : ""}
+        >
+          Dept
+        </MenuItem>
+        <MenuItem
+          icon={<Users size={20} />}
+          component={<Link to="/std" />}
+          className={isActive("/std") ? "font-medium text-red-800" : ""}
+        >
+          Std
+        </MenuItem>
       </Menu>
     </ProSidebar>
   );

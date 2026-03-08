@@ -13,7 +13,6 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AddDeptModal from "./AddDeptModal";
-import UpdateDeptModal from "./UpdateDeptModal";
 
 interface Department {
   department_id: number;
@@ -26,13 +25,14 @@ const api = axios.create({
 });
 
 const Departments = () => {
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingDepartmentId, setEditingDepartmentId] = useState<number | null>(
     null,
   );
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const navigate = useNavigate();
 
   const fetchDepartments = async () => {
@@ -41,8 +41,8 @@ const Departments = () => {
       const res = await api.get("/getDepartment");
       setDepartments(res.data);
     } catch (err) {
-      console.error("Failed to fetch departments:", err);
-      setError("Failed to fetch departments.");
+      console.error("Failed to load departments:", err);
+      setError("Failed to load departments.");
     } finally {
       setLoading(false);
     }
@@ -53,11 +53,11 @@ const Departments = () => {
   }, []);
 
   useEffect(() => {
-    if (error) {
-      window.alert(error);
-      setError("");
+    if (deleteError) {
+      window.alert(deleteError);
+      setDeleteError("");
     }
-  }, [error]);
+  }, [deleteError]);
 
   const handleDelete = async (departmentId: number) => {
     const confirmed = window.confirm(
@@ -74,7 +74,7 @@ const Departments = () => {
     } catch (err: unknown) {
       console.error("Failed to delete department:", err);
       const axiosError = err as AxiosError<{ message?: string }>;
-      setError(
+      setDeleteError(
         axiosError.response?.data?.message || "Failed to delete department.",
       );
     }
@@ -159,25 +159,19 @@ const Departments = () => {
               ))}
             </TableBody>
           </Table>
-          {showModal &&
-            (editingDepartmentId === null ? (
-              <AddDeptModal
-                onSaved={fetchDepartments}
-                onClose={() => {
-                  setShowModal(false);
-                  setEditingDepartmentId(null);
-                }}
-              />
-            ) : (
-              <UpdateDeptModal
-                departmentId={editingDepartmentId}
-                onSaved={fetchDepartments}
-                onClose={() => {
-                  setShowModal(false);
-                  setEditingDepartmentId(null);
-                }}
-              />
-            ))}
+          {error && (
+            <p className="text-lg text-red-500 mt-3 text-center">{error}</p>
+          )}
+          {showModal && (
+            <AddDeptModal
+              departmentId={editingDepartmentId ?? undefined}
+              onSaved={fetchDepartments}
+              onClose={() => {
+                setShowModal(false);
+                setEditingDepartmentId(null);
+              }}
+            />
+          )}
         </div>
       )}
     </div>

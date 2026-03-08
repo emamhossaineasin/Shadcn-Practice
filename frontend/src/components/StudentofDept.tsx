@@ -13,7 +13,6 @@ import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AddStdModal from "./AddStdModal";
-import UpdateStdModal from "./UpdateStdModal";
 
 interface Student {
   student_id: number;
@@ -53,11 +52,13 @@ const StudentofDept = () => {
       setLoading(false);
     }
   }, [departmentId]);
+
   useEffect(() => {
     if (departmentId) {
       fetchStudents();
     }
   }, [departmentId, fetchStudents]);
+
   const handleDelete = async (studentId: number) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this student?",
@@ -159,28 +160,17 @@ const StudentofDept = () => {
             </TableBody>
           </Table>
           {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
-          {showModal &&
-            (editingStudentId === null ? (
-              <AddStdModal
-                initialDepartmentId={
-                  departmentId ? Number(departmentId) : undefined
-                }
-                onSaved={fetchStudents}
-                onClose={() => {
-                  setShowModal(false);
-                  setEditingStudentId(null);
-                }}
-              />
-            ) : (
-              <UpdateStdModal
-                studentId={editingStudentId}
-                onSaved={fetchStudents}
-                onClose={() => {
-                  setShowModal(false);
-                  setEditingStudentId(null);
-                }}
-              />
-            ))}
+          {showModal && (
+            <AddStdModal
+              studentId={editingStudentId ?? undefined}
+              departmentId={departmentId ? Number(departmentId) : undefined}
+              onSaved={fetchStudents}
+              onClose={() => {
+                setShowModal(false);
+                setEditingStudentId(null);
+              }}
+            />
+          )}
         </div>
       )}
     </div>

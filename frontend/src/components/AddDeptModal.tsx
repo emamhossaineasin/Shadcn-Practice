@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -28,12 +28,18 @@ type DepartmentFormValues = z.infer<typeof departmentSchema>;
 
 interface AddDeptModalProps {
   onClose: () => void;
+  departmentId?: number;
   onSaved?: () => void;
 }
 
-const AddDeptModal = ({ onClose, onSaved }: AddDeptModalProps) => {
+const AddDeptModal = ({
+  onClose,
+  departmentId,
+  onSaved,
+}: AddDeptModalProps) => {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
+  const isEditMode = typeof departmentId === "number";
 
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +52,7 @@ const AddDeptModal = ({ onClose, onSaved }: AddDeptModalProps) => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<DepartmentFormValues>({
     resolver: zodResolver(departmentSchema),
@@ -54,18 +61,47 @@ const AddDeptModal = ({ onClose, onSaved }: AddDeptModalProps) => {
     },
   });
 
+  useEffect(() => {
+    if (!isEditMode) {
+      return;
+    }
+
+    const fetchDepartment = async () => {
+      try {
+        const res = await api.get(`/getDepartmentById?id=${departmentId}`);
+        setValue("department_name", res.data.department_name);
+      } catch (err) {
+        console.error("Failed to fetch department:", err);
+        setServerError("Failed to load department data.");
+      }
+    };
+
+    fetchDepartment();
+  }, [departmentId, isEditMode, setValue]);
+
   const onSubmit = async (values: DepartmentFormValues) => {
     setLoading(true);
     setServerError("");
     try {
-      await api.post("/postDepartment", {
-        department_name: values.department_name.trim(),
-      });
+      if (isEditMode) {
+        await api.put(`/updateDepartment/${departmentId}`, {
+          department_name: values.department_name.trim(),
+        });
+      } else {
+        await api.post("/postDepartment", {
+          department_name: values.department_name.trim(),
+        });
+      }
       onSaved?.();
       onClose();
     } catch (err) {
-      console.error("Failed to save department:", err);
-      setServerError("Failed to save department. Please try again.");
+      if (isEditMode) {
+        console.error("Failed to update department:", err);
+        setServerError("Failed to update department. Please try again.");
+      } else {
+        console.error("Failed to save department:", err);
+        setServerError("Failed to save department. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -86,9 +122,13 @@ const AddDeptModal = ({ onClose, onSaved }: AddDeptModalProps) => {
             <X size={30} />
           </button>
           <CardHeader>
-            <CardTitle>Add New Department</CardTitle>
+            <CardTitle>
+              {isEditMode ? "Update Department" : "Add New Department"}
+            </CardTitle>
             <CardDescription>
-              Enter the name of the new department.
+              {isEditMode
+                ? "Update the department name."
+                : "Enter the name of the new department."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -114,7 +154,13 @@ const AddDeptModal = ({ onClose, onSaved }: AddDeptModalProps) => {
                 className="w-full bg-green-600 hover:bg-green-700"
                 disabled={loading}
               >
-                {loading ? "Adding..." : "Add Department"}
+                {isEditMode
+                  ? loading
+                    ? "Updating..."
+                    : "Update Department"
+                  : loading
+                    ? "Adding..."
+                    : "Add Department"}
               </Button>
             </form>
           </CardContent>

@@ -46,18 +46,22 @@ type StudentFormValues = z.infer<typeof studentSchema>;
 
 interface AddStdModalProps {
   onClose: () => void;
-  initialDepartmentId?: number;
+  studentId?: number;
+  departmentId?: number;
   onSaved?: () => void;
 }
 
 const AddStdModal = ({
   onClose,
-  initialDepartmentId,
+  studentId,
+  departmentId,
   onSaved,
 }: AddStdModalProps) => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
+  const isEditMode = typeof studentId === "number";
+  const selectedDepartmentId = departmentId;
 
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -83,6 +87,10 @@ const AddStdModal = ({
   });
 
   useEffect(() => {
+    if (!isEditMode && typeof selectedDepartmentId === "number") {
+      return;
+    }
+
     const fetchDepartments = async () => {
       try {
         const res = await api.get("/getDepartment");
@@ -92,28 +100,60 @@ const AddStdModal = ({
       }
     };
     fetchDepartments();
-  }, []);
+  }, [isEditMode, selectedDepartmentId]);
 
   useEffect(() => {
-    if (typeof initialDepartmentId === "number") {
-      setValue("department_id", String(initialDepartmentId));
+    if (!isEditMode) {
+      return;
     }
-  }, [initialDepartmentId, setValue]);
+
+    const fetchStudent = async () => {
+      try {
+        const res = await api.get(`/getStudentById?id=${studentId}`);
+        setValue("student_id", String(res.data.student_id));
+        setValue("student_name", res.data.student_name);
+        setValue("department_id", String(res.data.department_id));
+      } catch (err) {
+        console.error("Failed to fetch student:", err);
+        setServerError("Failed to load student data.");
+      }
+    };
+
+    fetchStudent();
+  }, [isEditMode, setValue, studentId]);
+
+  useEffect(() => {
+    if (!isEditMode && typeof selectedDepartmentId === "number") {
+      setValue("department_id", String(selectedDepartmentId));
+    }
+  }, [isEditMode, selectedDepartmentId, setValue]);
 
   const onSubmit = async (values: StudentFormValues) => {
     setLoading(true);
     setServerError("");
     try {
-      await api.post("/postStudent", {
-        student_id: Number(values.student_id),
-        student_name: values.student_name.trim(),
-        department_id: Number(values.department_id),
-      });
+      if (isEditMode) {
+        await api.put(`/updateStudent/${studentId}`, {
+          student_name: values.student_name.trim(),
+          department_id: Number(values.department_id),
+        });
+      } else {
+        await api.post("/postStudent", {
+          student_id: Number(values.student_id),
+          student_name: values.student_name.trim(),
+          department_id: Number(values.department_id),
+        });
+      }
       onSaved?.();
       onClose();
     } catch (err) {
-      console.error("Failed to save student:", err);
-      setServerError("Failed to save student. Please try again.");
+      if (isEditMode) {
+        console.error("Failed to update student:", err);
+        setServerError("Failed to update student. Please try again.");
+      } else {
+        console.error("Failed to save student:", err);
+        setServerError("Failed to save student. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -135,9 +175,13 @@ const AddStdModal = ({
           </button>
 
           <CardHeader>
-            <CardTitle>Add New Student</CardTitle>
+            <CardTitle>
+              {isEditMode ? "Update Student" : "Add New Student"}
+            </CardTitle>
             <CardDescription>
-              Fill in the student details below.
+              {isEditMode
+                ? "Update the student details below."
+                : "Fill in the student details below."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -149,6 +193,7 @@ const AddStdModal = ({
                   type="number"
                   placeholder="Enter student ID"
                   {...register("student_id")}
+                  disabled={isEditMode}
                 />
                 {errors.student_id && (
                   <p className="text-sm text-red-500">
@@ -169,35 +214,74 @@ const AddStdModal = ({
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label>Department</Label>
-                <Controller
-                  control={control}
-                  name="department_id"
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departments.map((dept) => (
-                          <SelectItem
-                            key={dept.department_id}
-                            value={String(dept.department_id)}
-                          >
-                            {dept.department_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+              {!isEditMode && typeof selectedDepartmentId !== "number" && (
+                <div className="space-y-2">
+                  <Label>Department</Label>
+                  <Controller
+                    control={control}
+                    name="department_id"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {departments.map((dept) => (
+                            <SelectItem
+                              key={dept.department_id}
+                              value={String(dept.department_id)}
+                            >
+                              {dept.department_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.department_id && (
+                    <p className="text-sm text-red-500">
+                      {errors.department_id.message}
+                    </p>
                   )}
-                />
-                {errors.department_id && (
-                  <p className="text-sm text-red-500">
-                    {errors.department_id.message}
-                  </p>
-                )}
-              </div>
+                </div>
+              )}
+              {isEditMode && (
+                <div className="space-y-2">
+                  <Label>Department</Label>
+                  <Controller
+                    control={control}
+                    name="department_id"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {departments.map((dept) => (
+                            <SelectItem
+                              key={dept.department_id}
+                              value={String(dept.department_id)}
+                            >
+                              {dept.department_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.department_id && (
+                    <p className="text-sm text-red-500">
+                      {errors.department_id.message}
+                    </p>
+                  )}
+                </div>
+              )}
               {serverError && (
                 <p className="text-sm text-red-500">{serverError}</p>
               )}
@@ -206,7 +290,13 @@ const AddStdModal = ({
                 className="w-full  bg-green-600 hover:bg-green-700"
                 disabled={loading}
               >
-                {loading ? "Adding..." : "Add Student"}
+                {isEditMode
+                  ? loading
+                    ? "Updating..."
+                    : "Update Student"
+                  : loading
+                    ? "Adding..."
+                    : "Add Student"}
               </Button>
             </form>
           </CardContent>

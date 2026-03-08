@@ -11,7 +11,6 @@ import axios from "axios";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import AddStdModal from "./AddStdModal";
-import UpdateStdModal from "./UpdateStdModal";
 
 interface Student {
   student_id: number;
@@ -37,8 +36,8 @@ const Students = () => {
       const res = await api.get("/getStdWithDpt");
       setStudents(res.data);
     } catch (err) {
-      console.error("Failed to fetch students:", err);
-      setError("Failed to fetch students.");
+      console.error("Failed to load students:", err);
+      setError("Failed to load students.");
     } finally {
       setLoading(false);
     }
@@ -85,78 +84,71 @@ const Students = () => {
               Add Student
             </Button>
           </div>
-          
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-25">Student ID</TableHead>
-                  <TableHead className="w-25">Student Name</TableHead>
-                  <TableHead className="w-25">Department</TableHead>
-                  <TableHead className="w-25 text-center">Actions</TableHead>
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-25">Student ID</TableHead>
+                <TableHead className="w-25">Student Name</TableHead>
+                <TableHead className="w-25">Department</TableHead>
+                <TableHead className="w-25 text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {students.map((student, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">
+                    {student.student_id}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {student.student_name}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {student.department_name}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center justify-end gap-5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1 cursor-pointer"
+                        onClick={() => {
+                          setEditingStudentId(student.student_id);
+                          setShowModal(true);
+                        }}
+                      >
+                        <Pencil size={14} />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="gap-1 cursor-pointer"
+                        onClick={() => handleDelete(student.student_id)}
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {students.map((student, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">
-                      {student.student_id}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {student.student_name}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {student.department_name}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center justify-end gap-5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-1 cursor-pointer"
-                          onClick={() => {
-                            setEditingStudentId(student.student_id);
-                            setShowModal(true);
-                          }}
-                        >
-                          <Pencil size={14} />
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="gap-1 cursor-pointer"
-                          onClick={() => handleDelete(student.student_id)}
-                        >
-                          <Trash2 size={14} />
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          
-          {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
-          {showModal &&
-            (editingStudentId === null ? (
-              <AddStdModal
-                onSaved={fetchStudents}
-                onClose={() => {
-                  setShowModal(false);
-                  setEditingStudentId(null);
-                }}
-              />
-            ) : (
-              <UpdateStdModal
-                studentId={editingStudentId}
-                onSaved={fetchStudents}
-                onClose={() => {
-                  setShowModal(false);
-                  setEditingStudentId(null);
-                }}
-              />
-            ))}
+              ))}
+            </TableBody>
+          </Table>
+
+          {error && (
+            <p className="text-lg text-red-500 mt-3 text-center">{error}</p>
+          )}
+          {showModal && (
+            <AddStdModal
+              studentId={editingStudentId ?? undefined}
+              onSaved={fetchStudents}
+              onClose={() => {
+                setShowModal(false);
+                setEditingStudentId(null);
+              }}
+            />
+          )}
         </div>
       )}
     </div>

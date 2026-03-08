@@ -67,6 +67,39 @@ app.get('/getDepartment',(req, res)=>{
     });
 })  
 
+// app.get("/getDepartment", async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+
+//     const offset = (page - 1) * limit;
+
+//     const dataQuery = `
+//       SELECT *
+//       FROM "Emam".department
+//       ORDER BY department_id ASC
+//       LIMIT $1 OFFSET $2
+//     `;
+
+//     const countQuery = `
+//       SELECT COUNT(*) 
+//       FROM "Emam".department
+//     `;
+
+//     const dataResult = await con.query(dataQuery, [limit, offset]);
+//     const countResult = await con.query(countQuery);
+
+//     res.json({
+//       data: dataResult.rows,
+//       total: parseInt(countResult.rows[0].count),
+//     });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Failed to fetch departments" });
+//   }
+// });
+
 app.get('/getDepartmentById',(req, res)=>{
     const id = req.query.id; 
     const query='SELECT * FROM "Emam".department WHERE department_id=$1';
