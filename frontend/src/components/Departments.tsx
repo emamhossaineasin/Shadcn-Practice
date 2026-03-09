@@ -38,7 +38,7 @@ const Departments = () => {
   const fetchDepartments = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/getDepartment");
+      const res = await api.get("/getDepartments");
       setDepartments(res.data);
     } catch (err) {
       console.error("Failed to load departments:", err);

@@ -56,7 +56,7 @@ app.post('/postStudent',(req, res)=>{
     });
 })
 
-app.get('/getDepartment',(req, res)=>{
+app.get('/getDepartments',(req, res)=>{
     const query='SELECT * FROM "Emam".department order by department_id ASC'; 
     con.query(query, (err, result)=>{
         if(err){
@@ -67,38 +67,74 @@ app.get('/getDepartment',(req, res)=>{
     });
 })  
 
-// app.get("/getDepartment", async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
+app.get("/getDepartment", async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-//     const offset = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-//     const dataQuery = `
-//       SELECT *
-//       FROM "Emam".department
-//       ORDER BY department_id ASC
-//       LIMIT $1 OFFSET $2
-//     `;
+    const dataQuery = `
+      SELECT *
+      FROM "Emam".department
+      ORDER BY department_id ASC
+      LIMIT $1 OFFSET $2
+    `;
 
-//     const countQuery = `
-//       SELECT COUNT(*) 
-//       FROM "Emam".department
-//     `;
+    const countQuery = `
+      SELECT COUNT(*) 
+      FROM "Emam".department
+    `;
 
-//     const dataResult = await con.query(dataQuery, [limit, offset]);
-//     const countResult = await con.query(countQuery);
+    const dataResult = await con.query(dataQuery, [limit, offset]);
+    const countResult = await con.query(countQuery);
 
-//     res.json({
-//       data: dataResult.rows,
-//       total: parseInt(countResult.rows[0].count),
-//     });
+    res.json({
+      data: dataResult.rows,
+      total: parseInt(countResult.rows[0].count),
+    });
 
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to fetch departments" });
-//   }
-// });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch departments" });
+  }
+});
+
+app.get('/getStdOfDepartment', async (req, res) => {
+    try {
+    const id = req.query.id; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const offset = (page - 1) * limit;
+
+    const dataQuery = `
+        SELECT student_id, student_name
+	        FROM "Emam".student
+	        WHERE department_id=$1
+            ORDER BY student_id ASC
+            LIMIT $2 OFFSET $3;
+    `;
+
+    const countQuery = `
+      SELECT COUNT(*) 
+      FROM "Emam".student
+      WHERE department_id=$1
+    `;
+
+    const dataResult = await con.query(dataQuery, [id, limit, offset]);
+    const countResult = await con.query(countQuery, [id]);
+
+    res.json({
+      data: dataResult.rows,
+      total: parseInt(countResult.rows[0].count),
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch students" });
+  }
+});
 
 app.get('/getDepartmentById',(req, res)=>{
     const id = req.query.id; 
@@ -155,24 +191,7 @@ app.get('/getStdWithDpt',(req, res)=>{
 })
 
 
-app.get('/getStdOfDepartment', (req, res) => {
-    const id = req.query.id; 
 
-    const query = `
-        SELECT student_id, student_name
-	        FROM "Emam".student
-	        WHERE department_id=$1
-            ORDER BY student_id ASC;
-    `;
-    con.query(query, [id], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Database error" });
-        }
-
-        res.json(result.rows);
-    });
-});
 
 app.put('/updateStudent/:studentId', (req, res) => {
     const { studentId } = req.params;

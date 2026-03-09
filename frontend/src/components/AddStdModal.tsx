@@ -93,7 +93,7 @@ const AddStdModal = ({
 
     const fetchDepartments = async () => {
       try {
-        const res = await api.get("/getDepartment");
+        const res = await api.get("/getDepartments");
         setDepartments(res.data);
       } catch (err) {
         console.error("Failed to fetch departments:", err);
