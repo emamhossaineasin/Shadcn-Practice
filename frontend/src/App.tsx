@@ -5,6 +5,7 @@ import StudentofDept from "./components/StudentofDept";
 import Students from "./components/Students";
 import Dept from "./components/Dept";
 import Std from "./components/Std";
+import Kanban from "./components/Kanban";
 
 function AppRoutes() {
   const router = createBrowserRouter([
@@ -31,6 +32,10 @@ function AppRoutes() {
         {
           path: "/std",
           element: <Std />,
+        },
+        {
+          path: "/kanban",
+          element: <Kanban />,
         },
       ],
     },

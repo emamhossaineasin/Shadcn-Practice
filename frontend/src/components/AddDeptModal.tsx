@@ -114,7 +114,7 @@ const AddDeptModal = ({
       className="fixed inset-0  z-50 bg-opacity-30 backdrop-brightness-50 flex justify-center items-center"
     >
       <div className="w-3xl">
-        <Card>
+        <Card className="bg-gray-100">
           <button
             onClick={onClose}
             className="place-self-end pr-4 cursor-pointer"

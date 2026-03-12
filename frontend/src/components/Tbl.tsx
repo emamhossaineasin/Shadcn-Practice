@@ -266,7 +266,9 @@ function Tbl<TData, TValue>({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">Columns</Button>
+              <Button variant="outline" className="cursor-pointer">
+                Columns
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {table

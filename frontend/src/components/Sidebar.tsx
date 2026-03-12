@@ -1,4 +1,4 @@
-import { ClipboardList, Users } from "lucide-react";
+import { ClipboardList, Users, Kanban } from "lucide-react";
 import { Menu, MenuItem, Sidebar as ProSidebar } from "react-pro-sidebar";
 import { Link, useLocation } from "react-router-dom";
 
@@ -49,6 +49,13 @@ export default function Sidebar({ collapsed }: SidebarProps) {
           className={isActive("/std") ? "font-medium text-red-800" : ""}
         >
           Std
+        </MenuItem>
+        <MenuItem
+          icon={<Kanban size={20} />}
+          component={<Link to="/kanban" />}
+          className={isActive("/kanban") ? "font-medium text-red-800" : ""}
+        >
+          Kanban
         </MenuItem>
       </Menu>
     </ProSidebar>
